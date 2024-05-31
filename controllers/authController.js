@@ -1,5 +1,7 @@
 const User = require('../models/userModel');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
+const sendEmail = require('../utils/sendEmail');
 
 const generateToken = (id) => {
     return jwt.sign(
@@ -45,5 +47,52 @@ exports.login = async (req, res) => {
         }
     } catch (err) {
         res.status(400).json({ message: 'Invalid login credentials' });
+    }
+};
+
+exports.requestPasswordReset = async (req, res) => {
+    const { email } = req.body;
+    try {
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const resetToken = user.getResetPasswordToken();
+        await user.save();
+        const resetUrl = `${req.protocol}://${req.get('host')}/api/reset-password/${resetToken}`;
+        const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please use the below link to reset your password: \n\n ${resetUrl}. \n\n This reset password link will only be valid for 10 minutes.`;
+        await sendEmail({
+            email: user.email,
+            subject: 'Password reset token',
+            message
+        });
+
+        res.status(200).json({ message: 'Email sent' });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+exports.resetPassword = async (req, res) => {
+    const resetPasswordToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
+    try {
+        const user = await User.findOne({
+            resetPasswordToken,
+            resetPasswordExpire: { $gt: Date.now() }
+        });
+        if (!user) {
+            return res.status(400).json({ message: 'Invalid token' });
+        }
+
+        user.password = req.body.password;
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpire = undefined;
+        await user.save();
+
+        res.status(200).json({ message: 'Password reset successful' });
+    } catch (err) {
+        res.status(500).json({ message: 'Server error' });
     }
 };

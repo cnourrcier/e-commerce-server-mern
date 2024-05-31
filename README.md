@@ -1,6 +1,7 @@
 new-project-server/
 ├── controllers/
 │   └── authController.js
+│   └── userController.js
 ├── middleware/
 │   └── authMiddleware.js
 ├── models/
