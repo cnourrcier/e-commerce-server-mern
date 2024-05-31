@@ -19,7 +19,7 @@ exports.signup = async (req, res) => {
             return res.status(400).json({ message: 'User already exists' });
         }
         const user = await User.create({ name, email, password });
-        console.log(user);
+
         // Generate verification token
         const verificationToken = user.getVerificationToken();
         await user.save();
@@ -34,6 +34,7 @@ exports.signup = async (req, res) => {
         });
 
         res.status(201).json({
+            success: true,
             _id: user._id,
             name: user.name,
             email: user.email,
@@ -104,11 +105,13 @@ exports.login = async (req, res) => {
 
         if (user && (await user.matchPassword(password))) {
             res.json({
+                success: true,
                 _id: user._id,
                 name: user.name,
                 email: user.email,
                 token: generateToken(user._id)
             });
+
         } else {
             res.status(401).json({ message: 'Invalid email or password' });
         }
