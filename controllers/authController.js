@@ -64,6 +64,39 @@ exports.verifyEmail = async (req, res) => {
     }
 };
 
+exports.resendVerificationEmail = async (req, res) => {
+    const { email } = req.body;
+    try {
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        if (user.isVerified) {
+            return res.status(400).json({ message: 'User is already verified' });
+        }
+
+        // Generate a new verification token
+        const verificationToken = user.getVerificationToken();
+        await user.save();
+
+        // Send verification email
+        const verificationUrl = `${req.protocol}://${req.get('host')}/api/verify-email/${verificationToken}`;
+        const message = `Please verify your email by clicking the link: \n\n ${verificationUrl}`;
+
+        await sendEmail({
+            email: user.email,
+            subject: 'Email Verification',
+            message,
+        });
+
+        res.status(200).json({ message: 'Verification email sent' });
+    } catch (err) {
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
 exports.login = async (req, res) => {
     const { email, password } = req.body;
     try {
