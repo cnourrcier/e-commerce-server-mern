@@ -16,6 +16,11 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    isVerified: {
+        type: Boolean,
+        default: false
+    },
+    verificationToken: String,
     resetPasswordToken: String,
     resetPasswordExpire: Date
 });
@@ -39,6 +44,12 @@ userSchema.methods.getResetPasswordToken = function () {
     this.resetPasswordExpire = Date.now() + 10 * 60 * 1000; // 10 minutes
     return resetToken;
 };
+
+userSchema.methods.getVerificationToken = function () {
+    const verificationToken = crypto.randomBytes(20).toString('hex');
+    this.verificationToken = crypto.createHash('sha256').update(verificationToken).digest('hex');
+    return verificationToken;
+}
 
 const User = mongoose.model('User', userSchema);
 
