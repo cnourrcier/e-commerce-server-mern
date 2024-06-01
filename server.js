@@ -29,9 +29,7 @@ connectDB();
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
-// Update resetPassword controller to use getVerificationToken method in userModel
-// Implement user role management for different levels of access control.
-// Check if password from password-reset is the same as the old password (maybe keep history of old passwords to compare)
 // Implement backend functionality to check if password matches with confirmPassword during signup before saving to database.
-// Send token in http only cookie and don't store in localStorage. Figure out method to handle token in front end. 
 // Add createdAt field in user model that defaults to current date when account is created.
+// Send token in http only cookie and don't store in localStorage. Figure out method to handle token in front end. 
+// Implement user role management for different levels of access control.
