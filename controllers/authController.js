@@ -200,6 +200,17 @@ exports.resetPassword = async (req, res) => {
         }
 
         const newPassword = req.body.password;
+        const confirmPassword = req.body.confirmPassword;
+
+        if (newPassword === user.password) {
+            console.log('New password must not be the same as a previous password')
+            res.status(400).json('New password must not be the same as a previous password')
+        }
+
+        if (newPassword !== confirmPassword) {
+            console.log('Passwords do not match')
+            res.status(400).json('Passwords do not match')
+        }
 
         // Check if new password is same as any of the previous passwords
         const isSameAsPrevious = await Promise.all(user.previousPasswords.map(async (hash) => { // Use Promise.all with map to handle asynchronous comparisons in parallel.

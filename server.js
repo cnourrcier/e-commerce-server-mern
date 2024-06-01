@@ -29,7 +29,6 @@ connectDB();
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
-// Implement backend functionality to check if password matches with confirmPassword during signup before saving to database.
 // Add createdAt field in user model that defaults to current date when account is created.
 // Send token in http only cookie and don't store in localStorage. Figure out method to handle token in front end. 
 // Implement user role management for different levels of access control.
