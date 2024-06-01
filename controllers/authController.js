@@ -120,7 +120,7 @@ exports.login = async (req, res) => {
     try {
         const user = await User.findOne({ email });
 
-        if (user && (await user.matchPassword(password))) {
+        if (user?.isVerified && (await user.matchPassword(password))) {
             res.json({
                 success: true,
                 isVerified: user.isVerified,
@@ -130,8 +130,10 @@ exports.login = async (req, res) => {
                 token: generateToken(user._id)
             });
 
+        } else if (!user.isVerified) {
+            res.status(401).json({ message: 'Login failed. Please verify your account first.' })
         } else {
-            res.status(401).json({ message: 'Invalid email or password' });
+            res.status(401).json({ message: 'Login failed. Invalid email or password' });
         }
     } catch (err) {
         res.status(400).json({
