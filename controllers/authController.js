@@ -1,6 +1,7 @@
 const User = require('../models/userModel');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
+const bcrypt = require('bcryptjs');
 const sendEmail = require('../utils/sendEmail');
 
 const generateToken = (id) => {
@@ -178,16 +179,45 @@ exports.requestPasswordReset = async (req, res) => {
 
 exports.resetPassword = async (req, res) => {
     const resetPasswordToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
+
     try {
         const user = await User.findOne({
             resetPasswordToken,
             resetPasswordExpire: { $gt: Date.now() }
         });
         if (!user) {
+            console.log('Invalid token or token expired');
             return res.status(400).json({ message: 'Invalid token' });
         }
 
-        user.password = req.body.password;
+        const newPassword = req.body.password;
+
+        // Check if new password is same as any of the previous passwords
+        const isSameAsPrevious = await Promise.all(user.previousPasswords.map(async (hash) => { // Use Promise.all with map to handle asynchronous comparisons in parallel.
+            try {
+                const isMatch = await bcrypt.compare(newPassword, hash);
+                console.log(`Comparing new password with hash ${hash}:`, isMatch);
+                return isMatch;
+            } catch (compareErr) {
+                console.error('Error comparing passwords:', compareErr);
+                throw compareErr;
+            }
+        }));
+
+        if (isSameAsPrevious.includes(true)) {
+            console.log('New password is the same as a previously used password');
+            return res.status(400).json({
+                success: false,
+                message: 'New password cannot be the same as a previously used password'
+            });
+        }
+
+        user.previousPasswords.push(user.password); // Save current password to previousPasswords
+        if (user.previousPasswords.length > 5) { // Keep only the last 5 passwords
+            user.previousPasswords.shift();
+        }
+
+        user.password = newPassword;
         user.resetPasswordToken = undefined;
         user.resetPasswordExpire = undefined;
         await user.save();

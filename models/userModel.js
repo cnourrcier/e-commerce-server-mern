@@ -16,6 +16,7 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    previousPasswords: [{ type: String }], // Store previous password hashes
     isVerified: {
         type: Boolean,
         default: false
