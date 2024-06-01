@@ -35,13 +35,17 @@ exports.signup = async (req, res) => {
 
         res.status(201).json({
             success: true,
+            message: 'Verification email sent',
             _id: user._id,
             name: user.name,
             email: user.email,
             token: generateToken(user._id)
         });
     } catch (err) {
-        res.status(400).json({ message: 'Invalid user data' });
+        res.status(400).json({
+            success: false,
+            message: 'Invalid user data'
+        });
     }
 };
 
@@ -59,9 +63,16 @@ exports.verifyEmail = async (req, res) => {
         user.verificationToken = undefined;
         await user.save();
 
-        res.status(200).json({ message: 'Email verified successfully' });
+        // res.status(200).json({
+        //     success: true,
+        //     message: 'Email verified successfully'
+        // });
+        res.redirect(`${process.env.FRONTEND_URL}/login`);
     } catch (err) {
-        res.status(500).json({ message: 'Server error' });
+        res.status(500).json({
+            success: false,
+            message: 'Server error'
+        });
     }
 };
 
@@ -92,9 +103,15 @@ exports.resendVerificationEmail = async (req, res) => {
             message,
         });
 
-        res.status(200).json({ message: 'Verification email sent' });
+        res.status(200).json({
+            success: true,
+            message: 'Verification email sent'
+        });
     } catch (err) {
-        res.status(500).json({ message: 'Server error' });
+        res.status(500).json({
+            success: false,
+            message: 'Server error'
+        });
     }
 }
 
@@ -106,6 +123,7 @@ exports.login = async (req, res) => {
         if (user && (await user.matchPassword(password))) {
             res.json({
                 success: true,
+                isVerified: user.isVerified,
                 _id: user._id,
                 name: user.name,
                 email: user.email,
@@ -116,7 +134,10 @@ exports.login = async (req, res) => {
             res.status(401).json({ message: 'Invalid email or password' });
         }
     } catch (err) {
-        res.status(400).json({ message: 'Invalid login credentials' });
+        res.status(400).json({
+            success: false,
+            message: 'Invalid login credentials'
+        });
     }
 };
 
@@ -131,17 +152,25 @@ exports.requestPasswordReset = async (req, res) => {
 
         const resetToken = user.getResetPasswordToken();
         await user.save();
-        const resetUrl = `${req.protocol}://${req.get('host')}/api/reset-password/${resetToken}`;
+
+        const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
         const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please use the below link to reset your password: \n\n ${resetUrl}. \n\n This reset password link will only be valid for 10 minutes.`;
+
         await sendEmail({
             email: user.email,
             subject: 'Password reset token',
             message
         });
 
-        res.status(200).json({ message: 'Email sent' });
+        res.status(200).json({
+            success: true,
+            message: 'An email has been sent with instructions to reset your password.'
+        });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        res.status(500).json({
+            success: true,
+            message: err.message
+        });
     }
 };
 
@@ -161,8 +190,14 @@ exports.resetPassword = async (req, res) => {
         user.resetPasswordExpire = undefined;
         await user.save();
 
-        res.status(200).json({ message: 'Password reset successful' });
+        res.status(200).json({
+            success: true,
+            message: 'Password reset successful'
+        });
     } catch (err) {
-        res.status(500).json({ message: 'Server error' });
+        res.status(500).json({
+            success: false,
+            message: 'Server error'
+        });
     }
 };

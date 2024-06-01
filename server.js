@@ -30,3 +30,7 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
 // Implement user role management for different levels of access control.
+// Implement a frontend notification to inform users when they exceed the rate limit.
+// Implement backend functionality to prevent user from logging in without verifying account.
+// Implement backend functionality to check if password matches with confirmPassword during signup before saving to database.
+// Send token in http only cookie and don't store in localStorage. Figure out method to handle token in front end. 

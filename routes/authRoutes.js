@@ -8,8 +8,8 @@ const resendVerificationLimiter = require('../middleware/rateLimiter');
 router.post('/signup', signup);
 router.post('/login', login);
 router.post('/request-password-reset', requestPasswordReset);
-router.post('/reset-password/:token', resetPassword);
-router.post('/verify-email/:token', verifyEmail);
+router.put('/reset-password/:token', resetPassword);
+router.get('/verify-email/:token', verifyEmail);
 router.post('/resend-verification-email', resendVerificationLimiter, resendVerificationEmail);
 
 // Protected route to get user profile
