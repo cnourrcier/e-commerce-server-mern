@@ -3,18 +3,27 @@ const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 
 const userSchema = new mongoose.Schema({
-    name: {
+    firstName: {
         type: String,
-        required: true
+        minLength: [3, 'First name must be at least 3 characters long'],
+        maxLength: [20, 'First name must not exceed 20 characters'],
+        required: [true, 'First name is required']
+    },
+    lastName: {
+        type: String,
+        minLength: [3, 'Last name must be at least 3 characters long'],
+        maxLength: [20, 'Last name must not exceed 20 characters'],
+        required: [true, 'Last name is required']
     },
     email: {
         type: String,
-        required: true,
+        required: [true, 'Email is required'],
         unique: true
     },
     password: {
         type: String,
-        required: true
+        minlength: [8, 'Password must be at least 8 characters long'],
+        required: [true, 'Password is required']
     },
     previousPasswords: [{ type: String }], // Store previous password hashes
     isVerified: {

@@ -13,7 +13,7 @@ const generateToken = (id) => {
 };
 
 exports.signup = async (req, res) => {
-    const { name, email, password, confirmPassword } = req.body;
+    const { firstName, lastName, email, password, confirmPassword } = req.body;
 
     if (password !== confirmPassword) {
         return res.status(400).json({
@@ -28,7 +28,7 @@ exports.signup = async (req, res) => {
             return res.status(400).json({ message: 'User already exists' });
         }
 
-        const user = await User.create({ name, email, password });
+        const user = new User({ firstName, lastName, email, password });
 
         // Generate verification token
         const verificationToken = user.getVerificationToken();
@@ -47,38 +47,50 @@ exports.signup = async (req, res) => {
             success: true,
             message: 'Verification email sent',
             _id: user._id,
-            name: user.name,
+            firstName: user.firstName,
+            lastName: user.lastName,
             email: user.email,
             token: generateToken(user._id)
         });
     } catch (err) {
-        res.status(400).json({
+        // Extract mongoose validation error messages
+        if (err.name === 'ValidationError') {
+            const messages = Object.values(err.errors).map(val => val.message);
+            return res.status(400).json({
+                success: false,
+                message: messages.join(', ')
+            });
+        }
+
+        res.status(500).json({
             success: false,
-            message: 'Invalid user data'
+            message: 'Server error'
         });
     }
 };
 
 exports.verifyEmail = async (req, res) => {
     const verificationToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
+    console.log('Verification Token:', verificationToken); // Logging the token for debugging
 
     try {
         const user = await User.findOne({ verificationToken });
-
+        console.log('User found:', user); // Logging the user found
         if (!user) {
             return res.status(400).json({ message: 'Invalid token' });
+        }
+
+        if (user.isVerified) {
+            return res.status(400).json({ message: 'User is already verified' });
         }
 
         user.isVerified = true;
         user.verificationToken = undefined;
         await user.save();
 
-        // res.status(200).json({
-        //     success: true,
-        //     message: 'Email verified successfully'
-        // });
         res.redirect(`${process.env.FRONTEND_URL}/login`);
     } catch (err) {
+        console.error('Error during email verification:', err); // Log the error for debugging
         res.status(500).json({
             success: false,
             message: 'Server error'

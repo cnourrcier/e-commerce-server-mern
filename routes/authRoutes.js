@@ -5,7 +5,7 @@ const { getUserProfile } = require('../controllers/userController');
 const protect = require('../middleware/authMiddleware');
 const rateLimiter = require('../middleware/rateLimiter');
 
-router.post('/signup', signup);
+router.post('/signup', rateLimiter, signup);
 router.post('/login', login);
 router.post('/request-password-reset', rateLimiter, requestPasswordReset);
 router.put('/reset-password/:token', resetPassword);
