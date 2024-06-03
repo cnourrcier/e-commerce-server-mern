@@ -2,12 +2,16 @@ const express = require('express');
 const dotenv = require('dotenv');
 const colors = require('colors');
 const authRoutes = require('./routes/authRoutes');
+const userRoutes = require('./routes/userRoutes');
 const connectDB = require('./config/db');
 const morgan = require('morgan');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 
 dotenv.config();
+
+// Connect to MongoDB
+connectDB();
 
 const app = express();
 
@@ -16,7 +20,6 @@ app.use(cors({
     origin: process.env.FRONTEND_URL, // Allow frontend origin
     credentials: true // Allow credentials
 }));
-
 
 // Middlware
 app.use(express.json());
@@ -27,9 +30,16 @@ if (process.env.NODE_ENV === 'development') {
 
 // Routes
 app.use('/api', authRoutes);
+app.use('/api', userRoutes);
 
-// Connect to MongoDB
-connectDB();
+// Error Handling Middleware
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({
+        success: false,
+        message: 'Server Error'
+    });
+});
 
 // Start the server
 const PORT = process.env.PORT || 5000;
