@@ -6,9 +6,15 @@ exports.getUserProfile = async (req, res) => {
         if (user) {
             res.json(user);
         } else {
-            res.status(404).json({ message: 'User not found' });
+            res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
         }
     } catch (err) {
-        res.status(500).json({ message: 'Server error' });
+        res.status(500).json({
+            success: false,
+            message: 'Server error'
+        });
     }
 };

@@ -25,7 +25,10 @@ exports.signup = async (req, res) => {
     try {
         const userExists = await User.findOne({ email });
         if (userExists) {
-            return res.status(400).json({ message: 'User already exists' });
+            return res.status(400).json({
+                success: false,
+                message: 'User already exists'
+            });
         }
 
         const user = new User({ firstName, lastName, email, password });
@@ -43,14 +46,22 @@ exports.signup = async (req, res) => {
             message
         });
 
+        const token = generateToken(user._id);
+
+        res.cookie('authToken', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production', // Set to true in production
+            sameSite: 'strict',
+            maxAge: 24 * 60 * 60 * 1000 // 1 day
+        });
+
         res.status(201).json({
             success: true,
             message: 'Verification email sent',
             _id: user._id,
             firstName: user.firstName,
             lastName: user.lastName,
-            email: user.email,
-            token: generateToken(user._id)
+            email: user.email
         });
     } catch (err) {
         // Extract mongoose validation error messages
@@ -137,19 +148,69 @@ exports.resendVerificationEmail = async (req, res) => {
     }
 }
 
+exports.authStatus = async (req, res) => {
+    let token;
+
+    if (req.cookies && req.cookies.authToken) {
+        token = req.cookies.authToken;
+    }
+
+    console.log('Received token:', token);
+
+    if (!token) {
+        return res.status(200).json({
+            success: false,
+            message: 'Not authenticated'
+        });
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const user = await User.findById(decoded.id).select('-password');
+
+        console.log('user:', user);
+
+        if (!user) {
+            return res.status(200).json({
+                success: false,
+                message: 'User not found'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            user
+        });
+    } catch (err) {
+        res.status(200).json({
+            success: false,
+            message: 'Token verification failed'
+        });
+    }
+};
+
 exports.login = async (req, res) => {
     const { email, password } = req.body;
     try {
         const user = await User.findOne({ email });
 
         if (user?.isVerified && (await user.matchPassword(password))) {
+            const token = generateToken(user._id);
+
+            res.cookie('authToken', token, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production', // Set to true in production
+                sameSite: 'strict',
+                maxAge: 24 * 60 * 60 * 1000 // 1 day
+            });
+
             res.json({
                 success: true,
                 isVerified: user.isVerified,
                 _id: user._id,
-                name: user.name,
-                email: user.email,
-                token: generateToken(user._id)
+                firstName: user.firstName,
+                lastName: user.lastName,
+                email: user.email
             });
 
         } else if (!user.isVerified) {
@@ -164,6 +225,20 @@ exports.login = async (req, res) => {
         });
     }
 };
+
+exports.logout = (req, res) => {
+    res.cookie('authToken', '', {
+        httpOnly: true,
+        expires: new Date(0), // Set the cookie to expire immediately
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict'
+    });
+
+    res.status(200).json({
+        success: true,
+        message: 'Logged out successfully'
+    });
+}
 
 exports.requestPasswordReset = async (req, res) => {
     const { email } = req.body;

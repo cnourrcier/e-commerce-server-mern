@@ -5,11 +5,17 @@ const authRoutes = require('./routes/authRoutes');
 const connectDB = require('./config/db');
 const morgan = require('morgan');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 
 dotenv.config();
 
 const app = express();
-app.use(cors());
+
+app.use(cookieParser());
+app.use(cors({
+    origin: process.env.FRONTEND_URL, // Allow frontend origin
+    credentials: true // Allow credentials
+}));
 
 
 // Middlware
@@ -30,5 +36,8 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
 // Send token in http only cookie and don't store in localStorage. Figure out method to handle token in front end. 
+// Create functionality so that only one user can be logged in at a time on a device. 
+// If a user is logged in, disable signup functionality
+// Allow users to update their account info: firstName, lastName, email, password (different from resetting password because forgot)
+// Allow users to delete their account (include soft and hard delete functionality)
 // Implement user role management for different levels of access control.
-// Validate userModel  
