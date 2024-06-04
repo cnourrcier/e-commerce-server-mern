@@ -44,3 +44,35 @@ exports.getProductById = async (req, res) => {
         });
     }
 };
+
+exports.searchProducts = async (req, res) => {
+    console.log('hi')
+    try {
+        const searchTerm = req.query.q;
+        console.log('searchTerm:', searchTerm);
+        const products = await Product.find({
+            $or: [
+                { title: { $regex: searchTerm, $options: 'i' } },
+                { description: { $regex: searchTerm, $options: 'i' } },
+                { category: { $regex: searchTerm, $options: 'i' } },
+                { brand: { $regex: searchTerm, $options: 'i' } },
+            ]
+        });
+
+        if (!products) {
+            console.log('Error fetching products');
+        }
+
+        console.log(products);
+        res.status(200).json({
+            success: true,
+            products
+        });
+    } catch (err) {
+        console.log('Error:', err);
+        res.status(500).json({
+            success: false,
+            message: 'Server error'
+        });
+    }
+};
