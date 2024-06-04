@@ -59,7 +59,7 @@ exports.addToCart = async (req, res) => {
 };
 
 exports.removeFromCart = async (req, res) => {
-    const { productId } = req.body;
+    const { productId, quantity } = req.body;
     try {
         let cart = await Cart.findOne({ user: req.user._id });
         if (!cart) {
@@ -69,9 +69,15 @@ exports.removeFromCart = async (req, res) => {
             });
         }
 
-        cart.items = cart.items.filter(item => item.product.toString() !== productId);
+        const itemIndex = cart.items.findIndex(item => item.product.toString() === productId);
+        if (itemIndex > -1) {
+            if (cart.items[itemIndex].quantity > quantity) {
+                cart.items[itemIndex].quantity -= quantity;
+            } else {
+                cart.items.splice(itemIndex, 1);
+            }
+        }
         await cart.save();
-
         cart = await cart.populate('items.product');
 
         res.status(200).json({
