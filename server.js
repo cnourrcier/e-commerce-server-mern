@@ -1,12 +1,15 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const colors = require('colors');
-const authRoutes = require('./routes/authRoutes');
-const userRoutes = require('./routes/userRoutes');
 const connectDB = require('./config/db');
 const morgan = require('morgan');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
+
+const authRoutes = require('./routes/authRoutes');
+const userRoutes = require('./routes/userRoutes');
+const cartRoutes = require('./routes/cartRoutes');
+const productRoutes = require('./routes/productRoutes');
 
 dotenv.config();
 
@@ -31,6 +34,9 @@ if (process.env.NODE_ENV === 'development') {
 // Routes
 app.use('/api', authRoutes);
 app.use('/api', userRoutes);
+app.use('/api/cart', cartRoutes);
+app.use('/api/products', productRoutes);
+
 
 // Error Handling Middleware
 app.use((err, req, res, next) => {

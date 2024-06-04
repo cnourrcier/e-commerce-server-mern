@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const sendEmail = require('../utils/sendEmail');
+const Cart = require('../models/cartModel');
 
 const generateToken = (id) => {
     return jwt.sign(
@@ -36,6 +37,9 @@ exports.signup = async (req, res) => {
         // Generate verification token
         const verificationToken = user.getVerificationToken();
         await user.save();
+
+        const cart = new Cart({ user: user._id });
+        await cart.save();
 
         // Send verification email
         const verificationUrl = `${req.protocol}://${req.get('host')}/api/verify-email/${verificationToken}`;
@@ -86,7 +90,6 @@ exports.verifyEmail = async (req, res) => {
 
     try {
         const user = await User.findOne({ verificationToken });
-        console.log('User found:', user); // Logging the user found
         if (!user) {
             return res.status(400).json({ message: 'Invalid token' });
         }
@@ -155,8 +158,6 @@ exports.authStatus = async (req, res) => {
         token = req.cookies.authToken;
     }
 
-    console.log('Received token:', token);
-
     if (!token) {
         return res.status(200).json({
             success: false,
@@ -167,8 +168,6 @@ exports.authStatus = async (req, res) => {
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const user = await User.findById(decoded.id).select('-password');
-
-        console.log('user:', user);
 
         if (!user) {
             return res.status(200).json({
@@ -282,20 +281,20 @@ exports.resetPassword = async (req, res) => {
             resetPasswordExpire: { $gt: Date.now() }
         });
         if (!user) {
-            console.log('Invalid token or token expired');
-            return res.status(400).json({ message: 'Invalid token' });
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid token'
+            });
         }
 
         const newPassword = req.body.password;
         const confirmPassword = req.body.confirmPassword;
 
         if (newPassword === user.password) {
-            console.log('New password must not be the same as a previous password')
             res.status(400).json('New password must not be the same as a previous password')
         }
 
         if (newPassword !== confirmPassword) {
-            console.log('Passwords do not match')
             res.status(400).json('Passwords do not match')
         }
 
@@ -303,7 +302,6 @@ exports.resetPassword = async (req, res) => {
         const isSameAsPrevious = await Promise.all(user.previousPasswords.map(async (hash) => { // Use Promise.all with map to handle asynchronous comparisons in parallel.
             try {
                 const isMatch = await bcrypt.compare(newPassword, hash);
-                console.log(`Comparing new password with hash ${hash}:`, isMatch);
                 return isMatch;
             } catch (compareErr) {
                 console.error('Error comparing passwords:', compareErr);
@@ -312,7 +310,6 @@ exports.resetPassword = async (req, res) => {
         }));
 
         if (isSameAsPrevious.includes(true)) {
-            console.log('New password is the same as a previously used password');
             return res.status(400).json({
                 success: false,
                 message: 'New password cannot be the same as a previously used password'
