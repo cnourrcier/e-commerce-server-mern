@@ -10,6 +10,7 @@ const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const cartRoutes = require('./routes/cartRoutes');
 const productRoutes = require('./routes/productRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 
 dotenv.config();
 
@@ -36,6 +37,7 @@ app.use('/api', authRoutes);
 app.use('/api', userRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/products', productRoutes);
+app.use('/api/admin', adminRoutes);
 
 
 // Error Handling Middleware
@@ -51,6 +53,4 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
-// Allow users to update their account info: firstName, lastName, email, password (different from resetting password because forgot)
-// Allow users to delete their account (include soft and hard delete functionality)
 // Implement user role management for different levels of access control.

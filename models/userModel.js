@@ -25,6 +25,11 @@ const userSchema = new mongoose.Schema({
         minlength: [8, 'Password must be at least 8 characters long'],
         required: [true, 'Password is required']
     },
+    role: {
+        type: String,
+        enum: ['admin', 'manager', 'customer'],
+        default: 'customer'
+    },
     previousPasswords: [{ type: String }], // Store previous password hashes
     isVerified: {
         type: Boolean,
