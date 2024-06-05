@@ -51,8 +51,6 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
-// Add functionality to choose qty of item to remove if qty > 1
-// If a user is logged in, disable signup functionality
 // Allow users to update their account info: firstName, lastName, email, password (different from resetting password because forgot)
 // Allow users to delete their account (include soft and hard delete functionality)
 // Implement user role management for different levels of access control.
