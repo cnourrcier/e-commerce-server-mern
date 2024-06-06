@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path');
 const dotenv = require('dotenv');
 const colors = require('colors');
 const connectDB = require('./config/db');
@@ -39,6 +40,12 @@ app.use('/api/cart', cartRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/admin', adminRoutes);
 
+if (process.env.NODE_ENV === 'production') {
+    app.use(express.static(path.join(__dirname, '../cardinal-goods-react', 'dist')));
+
+    app.get('*', (req, res) => res.sendFile(path.resolve(__dirname, '../cardinal-goods-react', 'dist', 'index.html')));
+}
+
 
 // Error Handling Middleware
 app.use((err, req, res, next) => {
@@ -53,4 +60,6 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
-// Implement user role management for different levels of access control.
+
+// Implement checkout functionality in frontend and backend (shopping cart page: display subtotal, tax, total, checkout button that navigates to checkout page)
+// Design and style homepage
