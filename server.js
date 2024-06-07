@@ -41,9 +41,9 @@ app.use('/api/products', productRoutes);
 app.use('/api/admin', adminRoutes);
 
 if (process.env.NODE_ENV === 'production') {
-    app.use(express.static(path.join(__dirname, '../cardinal-goods-react', 'dist')));
+    app.use(express.static(path.join(__dirname, '../e-commerce-front-end-mern', 'dist')));
 
-    app.get('*', (req, res) => res.sendFile(path.resolve(__dirname, '../cardinal-goods-react', 'dist', 'index.html')));
+    app.get('*', (req, res) => res.sendFile(path.resolve(__dirname, '../e-commerce-front-end-mern', 'dist', 'index.html')));
 }
 
 
