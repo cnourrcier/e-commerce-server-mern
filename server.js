@@ -42,6 +42,7 @@ app.use('/api/admin', adminRoutes);
 
 if (process.env.NODE_ENV === 'production') {
     app.use(express.static(path.join(__dirname, '../e-commerce-front-end-mern', 'dist')));
+    app.use('/img', express.static(path.join(__dirname, '../e-commerce-front-end-mern', '/img')));
 
     app.get('*', (req, res) => res.sendFile(path.resolve(__dirname, '../e-commerce-front-end-mern', 'dist', 'index.html')));
 }
@@ -62,4 +63,3 @@ app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
 
 // Implement checkout functionality in frontend and backend (shopping cart page: display subtotal, tax, total, checkout button that navigates to checkout page)
-// Design and style homepage
