@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node server",
-    "server": "nodemon server.js",
+    "server": "nodemon server",
     "client": "npm run dev --prefix ../cardinal-goods-react",
     "dev": "concurrently \"npm run server\" \"npm run client\""
   },
