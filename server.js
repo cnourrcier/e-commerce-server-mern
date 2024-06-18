@@ -62,4 +62,7 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
 
-// Implement checkout functionality in frontend and backend (shopping cart page: display subtotal, tax, total, checkout button that navigates to checkout page)
+// Implement checkout functionality in frontend and backend (Order Summary: display items total, shipping and handling, total before tax, tax, order total)
+// Implement payment page
+// Clear shopping cart page when user logs out
+// On small screens: keep dropdown menu visible when scrolling down
