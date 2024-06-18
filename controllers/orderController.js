@@ -3,18 +3,20 @@ const Cart = require('../models/cartModel');
 
 exports.createOrder = async (req, res) => {
     try {
-        const { address, cart } = req.body;
+        const { address, cart, totalAmount } = req.body;
         const user = req.user._id;
-        const totalAmount = cart.reduce((total, item) => total + item.product.price * item.quantity, 0);
+
+        console.log('Creating order with:', { user, address, cart, totalAmount });
 
         const order = new Order({
             user,
-            items: cart,
+            items: cart.map(item => ({ product: item.product._id, quantity: item.quantity })),
             totalAmount,
             address
         });
 
-        await orders.save();
+        await order.save();
+        console.log('Order saved:', order);
 
         // Clear the user's cart after creating the order
         await Cart.findOneAndUpdate({ user: req.user._id }, { items: [] });
