@@ -41,17 +41,6 @@ exports.createOrder = async (req, res) => {
                 message: 'Error updating user information'
             });
         }
-        // Clear the user's cart after creating the order
-        try {
-            await Cart.findOneAndUpdate({ user: req.user._id }, { items: [] });
-            console.log('Cart cleared for user:', req.user._id);
-        } catch (err) {
-            console.error('Error clearing cart:', err);
-            return res.status(500).json({
-                success: false,
-                message: 'Error clearing cart'
-            });
-        }
 
         res.status(201).json({
             success: true,
@@ -89,3 +78,34 @@ exports.getOrders = async (req, res) => {
         });
     }
 };
+
+exports.processPayment = (req, res) => {
+    const { amount } = req.body;
+
+    if (amount <= 0) {
+        return res.status(400).json({
+            success: false,
+            message: 'Invalid amount'
+        });
+    }
+
+    // Simulate a payment process delay
+    setTimeout(async () => {
+        try {
+            // Clear the user's cart after processing the payment
+            await Cart.findOneAndUpdate({ user: req.user._id }, { items: [] });
+            console.log('Cart cleared for user:', req.user._id);
+
+            res.status(200).json({
+                success: true,
+                message: 'Payment processed successfully'
+            });
+        } catch (err) {
+            console.error('Error clearing cart:', err);
+            return res.status(500).json({
+                success: false,
+                message: 'Error clearing cart after payment'
+            });
+        }
+    }, 2000);
+}
