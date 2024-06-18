@@ -13,6 +13,13 @@ exports.createOrder = async (req, res) => {
             });
         }
 
+        if (cart.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Error: Cart is empty'
+            })
+        }
+
         const order = new Order({
             user,
             items: cart.map(item => ({ product: item.product._id, quantity: item.quantity })),
