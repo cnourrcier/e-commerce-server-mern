@@ -63,8 +63,20 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
+// Should I update the username and email in the db if the user updates it during checkout?
 
-// Implement checkout functionality in frontend and backend (Order Summary: display items total, shipping and handling, total before tax, tax, order total)
-// Implement payment page
+// When user clicks on button to checkout from the shopping cart, check if the user has a stored address. If not, prompt the user to enter a shipping address. Then show Review Your Order.
+// During checkout process, when user inputs their address, store the address in the user collection. Update user model to store user address.
+
 // Clear shopping cart page when user logs out
-// On small screens: keep dropdown menu visible when scrolling down
+
+// Maybe disable checkout link in shopping cart when there are no items in cart
+// Front end: calculate shipping and handling and tax on checkout page only if there is at least one item in the cart
+
+// Implement payment page
+// Integrate a payment gateway (e.g., Stripe, PayPal) to handle payments securely.
+// Ensure sensitive information (e.g., credit card details) is never handled by server directly.
+
+// Allow users to track the status of their orders (Pending, Shipped, Delivered, etc.).
+
+// Send email notifications to users upon order placement, order updates, and delivery.
