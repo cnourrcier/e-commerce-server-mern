@@ -1,12 +1,12 @@
 const Order = require('../models/orderModel');
 const Cart = require('../models/cartModel');
+const User = require('../models/userModel');
 
 exports.createOrder = async (req, res) => {
     try {
-        const { address, cart, totalAmount } = req.body;
+        const { address, cart, totalAmount, firstName, lastName, email } = req.body;
         const user = req.user._id;
-
-        if (!address || !cart || !totalAmount) {
+        if (!address || !cart || !totalAmount || !firstName || !lastName || !email) {
             return res.status(400).json({
                 success: false,
                 message: 'Error: Missing fields'
@@ -21,9 +21,30 @@ exports.createOrder = async (req, res) => {
         });
 
         await order.save();
+        console.log('Order saved:', order);
 
+        // Update user information if changed
+        try {
+            await User.findByIdAndUpdate(user, { firstName, lastName, email });
+            console.log('User updated:', user);
+        } catch (err) {
+            console.error('Error updating user:', err);
+            return res.status(500).json({
+                success: false,
+                message: 'Error updating user information'
+            });
+        }
         // Clear the user's cart after creating the order
-        await Cart.findOneAndUpdate({ user: req.user._id }, { items: [] });
+        try {
+            await Cart.findOneAndUpdate({ user: req.user._id }, { items: [] });
+            console.log('Cart cleared for user:', req.user._id);
+        } catch (err) {
+            console.error('Error clearing cart:', err);
+            return res.status(500).json({
+                success: false,
+                message: 'Error clearing cart'
+            });
+        }
 
         res.status(201).json({
             success: true,

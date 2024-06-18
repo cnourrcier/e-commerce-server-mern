@@ -63,8 +63,6 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
-// Should I update the username and email in the db if the user updates it during checkout?
-
 // When user clicks on button to checkout from the shopping cart, check if the user has a stored address. If not, prompt the user to enter a shipping address. Then show Review Your Order.
 // During checkout process, when user inputs their address, store the address in the user collection. Update user model to store user address.
 
