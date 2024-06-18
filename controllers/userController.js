@@ -21,7 +21,7 @@ exports.getUserProfile = async (req, res) => {
 };
 
 exports.updateAccount = async (req, res) => {
-    const { firstName, lastName, email, password, confirmPassword } = req.body;
+    const { firstName, lastName, email, address, password, confirmPassword } = req.body;
 
     try {
         const user = await User.findById(req.user._id);
@@ -29,6 +29,7 @@ exports.updateAccount = async (req, res) => {
         user.firstName = firstName || user.firstName;
         user.lastName = lastName || user.lastName;
         user.email = email || user.email;
+        user.address = address || user.address;
 
         if (password && confirmPassword) {
             if (password !== confirmPassword) {
@@ -78,7 +79,8 @@ exports.updateAccount = async (req, res) => {
                 _id: user._id,
                 firstName: user.firstName,
                 lastName: user.lastName,
-                email: user.email
+                email: user.email,
+                address: user.address
             }
         });
     } catch (err) {

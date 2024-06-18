@@ -25,7 +25,7 @@ exports.createOrder = async (req, res) => {
 
         // Update user information if changed
         try {
-            await User.findByIdAndUpdate(user, { firstName, lastName, email });
+            await User.findByIdAndUpdate(user, { firstName, lastName, email, address });
             console.log('User updated:', user);
         } catch (err) {
             console.error('Error updating user:', err);
