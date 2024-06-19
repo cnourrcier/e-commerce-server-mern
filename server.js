@@ -63,12 +63,3 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
-// Clear shopping cart page when user logs out
-
-// Implement payment page
-// Integrate a payment gateway (e.g., Stripe, PayPal) to handle payments securely.
-// Ensure sensitive information (e.g., credit card details) is never handled by server directly.
-
-// Allow users to track the status of their orders (Pending, Shipped, Delivered, etc.).
-
-// Send email notifications to users upon order placement, order updates, and delivery.
