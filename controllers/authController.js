@@ -102,7 +102,7 @@ exports.verifyEmail = async (req, res) => {
         user.verificationToken = undefined;
         await user.save();
 
-        res.redirect(`/login`);
+        res.redirect(`/api/login`);
     } catch (err) {
         console.error('Error during email verification:', err); // Log the error for debugging
         res.status(500).json({
