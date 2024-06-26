@@ -37,25 +37,20 @@ exports.signup = async (req, res) => {
         // Generate verification token
         const verificationToken = user.getVerificationToken();
         await user.save();
-        console.log('User saved successfully');
 
         const cart = new Cart({ user: user._id });
         await cart.save();
-        console.log('Cart created successfully');
 
         // Send verification email
         const verificationUrl = `${req.protocol}://${req.get('host')}/api/verify-email/${verificationToken}`;
         const message = `Please verify your email by clicking the link: \n\n ${verificationUrl}`;
 
         // Logging the verification URL and message for debugging
-        console.log(`Sending verification email to ${user.email} with URL: ${verificationUrl}`);
         await sendEmail({
             email: user.email,
             subject: 'Email Verification',
             message
         });
-
-        console.log('Verification email sent successfully');
 
         const token = generateToken(user._id);
 
@@ -84,8 +79,6 @@ exports.signup = async (req, res) => {
             });
         }
 
-        console.error('Error during signup', err);
-
         res.status(500).json({
             success: false,
             message: 'Server error'
@@ -95,7 +88,6 @@ exports.signup = async (req, res) => {
 
 exports.verifyEmail = async (req, res) => {
     const verificationToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
-    console.log('Verification Token:', verificationToken); // Logging the token for debugging
 
     try {
         const user = await User.findOne({ verificationToken });
@@ -113,7 +105,6 @@ exports.verifyEmail = async (req, res) => {
 
         res.redirect(`/login`);
     } catch (err) {
-        console.error('Error during email verification:', err); // Log the error for debugging
         res.status(500).json({
             success: false,
             message: 'Server error'
@@ -261,7 +252,7 @@ exports.requestPasswordReset = async (req, res) => {
         const resetToken = user.getResetPasswordToken();
         await user.save();
 
-        const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+        const resetUrl = `${req.protocol}://${req.get('host')}/reset-password/${resetToken}`;
         const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please use the below link to reset your password: \n\n ${resetUrl}. \n\n This reset password link will only be valid for 10 minutes.`;
 
         await sendEmail({
@@ -314,7 +305,6 @@ exports.resetPassword = async (req, res) => {
                 const isMatch = await bcrypt.compare(newPassword, hash);
                 return isMatch;
             } catch (compareErr) {
-                console.error('Error comparing passwords:', compareErr);
                 throw compareErr;
             }
         }));

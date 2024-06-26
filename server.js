@@ -21,6 +21,9 @@ connectDB();
 
 const app = express();
 
+// set 'trust proxy' setting in Express to true for express-rate-limit
+app.set('trust proxy', 1);
+
 app.use(cookieParser());
 app.use(cors({
     origin: process.env.FRONTEND_URL, // Allow frontend origin
