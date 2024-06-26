@@ -37,18 +37,25 @@ exports.signup = async (req, res) => {
         // Generate verification token
         const verificationToken = user.getVerificationToken();
         await user.save();
+        console.log('User saved successfully');
 
         const cart = new Cart({ user: user._id });
         await cart.save();
+        console.log('Cart created successfully');
 
         // Send verification email
         const verificationUrl = `${req.protocol}://${req.get('host')}/api/verify-email/${verificationToken}`;
         const message = `Please verify your email by clicking the link: \n\n ${verificationUrl}`;
+
+        // Logging the verification URL and message for debugging
+        console.log(`Sending verification email to ${user.email} with URL: ${verificationUrl}`);
         await sendEmail({
             email: user.email,
             subject: 'Email Verification',
             message
         });
+
+        console.log('Verification email sent successfully');
 
         const token = generateToken(user._id);
 
@@ -76,6 +83,8 @@ exports.signup = async (req, res) => {
                 message: messages.join(', ')
             });
         }
+
+        console.error('Error during signup', err);
 
         res.status(500).json({
             success: false,
