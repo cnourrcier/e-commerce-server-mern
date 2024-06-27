@@ -67,3 +67,4 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
 // Error handling and validations in admin dashboard
+// use format.js utils function in front end to add commas to numbers
