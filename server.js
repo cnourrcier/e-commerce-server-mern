@@ -66,8 +66,4 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
-
 // Error handling and validations in admin dashboard
-// Update images in image slider on landing page 
-// Maybe add placehoder to search bar? maybe ... ?
-// Error handling and validations in checkout page

@@ -6,13 +6,24 @@ exports.createOrder = async (req, res) => {
     try {
         const { address, cart, totalAmount, firstName, lastName, email } = req.body;
         const user = req.user._id;
-        if (!address || !cart || !totalAmount || !firstName || !lastName || !email) {
+
+        // Validate user input
+        const missingUserInput = [];
+        if (!address) missingUserInput.push('address');
+        if (!cart) missingUserInput.push('cart');
+        if (!totalAmount) missingUserInput.push('totalAmount');
+        if (!firstName) missingUserInput.push('firstName');
+        if (!lastName) missingUserInput.push('lastName');
+        if (!email) missingUserInput.push('email');
+
+        if (missingUserInput.length > 0) {
             return res.status(400).json({
                 success: false,
-                message: 'Error: Missing fields'
+                message: `Missing fields: ${missingUserInput.join(', ')}`
             });
         }
 
+        // Ensure cart is not empty
         if (cart.length === 0) {
             return res.status(400).json({
                 success: false,
@@ -20,6 +31,7 @@ exports.createOrder = async (req, res) => {
             })
         }
 
+        // Create new order
         const order = new Order({
             user,
             items: cart.map(item => ({ product: item.product._id, quantity: item.quantity })),
@@ -29,18 +41,6 @@ exports.createOrder = async (req, res) => {
 
         await order.save();
         console.log('Order saved:', order);
-
-        // Update user information if changed
-        try {
-            await User.findByIdAndUpdate(user, { firstName, lastName, email, address });
-            console.log('User updated:', user);
-        } catch (err) {
-            console.error('Error updating user:', err);
-            return res.status(500).json({
-                success: false,
-                message: 'Error updating user information'
-            });
-        }
 
         res.status(201).json({
             success: true,
