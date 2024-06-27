@@ -31,7 +31,7 @@ exports.updateAccount = async (req, res) => {
         user.email = email || user.email;
         user.address = address || user.address;
 
-        if (password && confirmPassword) {
+        if (password || confirmPassword) {
             if (password !== confirmPassword) {
                 return res.status(400).json({
                     success: false,
@@ -54,7 +54,6 @@ exports.updateAccount = async (req, res) => {
                     throw compareErr;
                 }
             }));
-
             if (isSameAsPrevious.includes(true)) {
                 return res.status(400).json({
                     success: false,
@@ -85,6 +84,15 @@ exports.updateAccount = async (req, res) => {
         });
     } catch (err) {
         console.log(err);
+        // Extract mongoose validation error messages
+        if (err.name === 'ValidationError') {
+            const messages = Object.values(err.errors).map(val => val.message);
+            return res.status(400).json({
+                success: false,
+                message: messages.join(', ')
+            });
+        }
+
         res.status(500).json({
             success: false,
             message: 'Server error'
