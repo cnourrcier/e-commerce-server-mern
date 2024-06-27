@@ -4,6 +4,7 @@ const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const sendEmail = require('../utils/sendEmail');
 const Cart = require('../models/cartModel');
+const { validatePassword } = require('../utils/passwordValidator');
 
 const generateToken = (id) => {
     return jwt.sign(
@@ -193,7 +194,7 @@ exports.login = async (req, res) => {
     try {
         const user = await User.findOne({ email });
 
-        if (user?.isVerified && (await user.matchPassword(password))) {
+        if (user?.isVerified && await bcrypt.compare(password, user.password)) {
             const token = generateToken(user._id);
 
             res.cookie('authToken', token, {
@@ -213,10 +214,16 @@ exports.login = async (req, res) => {
                 role: user.role
             });
 
-        } else if (!user.isVerified) {
-            res.status(401).json({ message: 'Login failed. Please verify your account first.' })
+        } else if (user && !user.isVerified) {
+            res.status(401).json({
+                success: false,
+                message: 'Login failed. Please verify your account first.'
+            })
         } else {
-            res.status(401).json({ message: 'Login failed. Invalid email or password' });
+            res.status(401).json({
+                success: false,
+                message: 'Login failed. Invalid email or password'
+            });
         }
     } catch (err) {
         res.status(400).json({
@@ -253,7 +260,7 @@ exports.requestPasswordReset = async (req, res) => {
         await user.save();
 
         const resetUrl = `${req.protocol}://${req.get('host')}/reset-password/${resetToken}`;
-        const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please use the below link to reset your password: \n\n ${resetUrl}. \n\n This reset password link will only be valid for 10 minutes.`;
+        const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please use the below link to reset your password: \n\n ${resetUrl} \n\n This reset password link will only be valid for 10 minutes.`;
 
         await sendEmail({
             email: user.email,
@@ -288,40 +295,24 @@ exports.resetPassword = async (req, res) => {
             });
         }
 
-        const newPassword = req.body.password;
-        const confirmPassword = req.body.confirmPassword;
+        const { password, confirmPassword } = req.body;
 
-        if (newPassword === user.password) {
-            res.status(400).json('New password must not be the same as a previous password')
-        }
-
-        if (newPassword !== confirmPassword) {
-            res.status(400).json('Passwords do not match')
-        }
-
-        // Check if new password is same as any of the previous passwords
-        const isSameAsPrevious = await Promise.all(user.previousPasswords.map(async (hash) => { // Use Promise.all with map to handle asynchronous comparisons in parallel.
-            try {
-                const isMatch = await bcrypt.compare(newPassword, hash);
-                return isMatch;
-            } catch (compareErr) {
-                throw compareErr;
-            }
-        }));
-
-        if (isSameAsPrevious.includes(true)) {
+        // Custom controller-level password validations
+        const validationError = await validatePassword(password, confirmPassword, user.password, user.previousPasswords);
+        if (validationError) {
             return res.status(400).json({
                 success: false,
-                message: 'New password cannot be the same as a previously used password'
+                message: validationError
             });
         }
 
-        user.previousPasswords.push(user.password); // Save current password to previousPasswords
+        // Save current password to previousPasswords array
+        user.previousPasswords.push(user.password);
         if (user.previousPasswords.length > 5) { // Keep only the last 5 passwords
             user.previousPasswords.shift();
         }
 
-        user.password = newPassword;
+        user.password = password;
         user.resetPasswordToken = undefined;
         user.resetPasswordExpire = undefined;
         await user.save();
@@ -331,6 +322,15 @@ exports.resetPassword = async (req, res) => {
             message: 'Password reset successful'
         });
     } catch (err) {
+        // Extract mongoose validation error messages
+        if (err.name === 'ValidationError') {
+            const messages = Object.values(err.errors).map(val => val.message);
+            return res.status(400).json({
+                success: false,
+                message: messages.join(', ')
+            });
+        }
+
         res.status(500).json({
             success: false,
             message: 'Server error'

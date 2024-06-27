@@ -1,4 +1,5 @@
 const User = require('../models/userModel');
+const { validatePassword } = require('../utils/passwordValidator');
 const bcrypt = require('bcryptjs');
 
 exports.getUserProfile = async (req, res) => {
@@ -31,37 +32,17 @@ exports.updateAccount = async (req, res) => {
         user.email = email || user.email;
         user.address = address || user.address;
 
+        // Custom controller-level password validations
         if (password || confirmPassword) {
-            if (password !== confirmPassword) {
+            const validationError = await validatePassword(password, confirmPassword, user.password, user.previousPasswords);
+            if (validationError) {
                 return res.status(400).json({
                     success: false,
-                    message: 'Passwords do not match'
-                })
-            }
-            if (await user.matchPassword(password)) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'New password must not be the same as a previous password'
-                })
-            }
-            // Check if new password is same as any of the previous passwords
-            const isSameAsPrevious = await Promise.all(user.previousPasswords.map(async (hash) => { // Use Promise.all with map to handle asynchronous comparisons in parallel.
-                try {
-                    const isMatch = await bcrypt.compare(password, hash);
-                    return isMatch;
-                } catch (compareErr) {
-                    console.error('Error comparing passwords:', compareErr);
-                    throw compareErr;
-                }
-            }));
-            if (isSameAsPrevious.includes(true)) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'New password cannot be the same as a previously used password'
+                    message: validationError
                 });
             }
-
-            user.previousPasswords.push(user.password); // Save current password to previousPasswords
+            // Save current password to previousPasswords array
+            user.previousPasswords.push(user.password);
             if (user.previousPasswords.length > 5) { // Keep only the last 5 passwords
                 user.previousPasswords.shift();
             }
@@ -83,7 +64,6 @@ exports.updateAccount = async (req, res) => {
             }
         });
     } catch (err) {
-        console.log(err);
         // Extract mongoose validation error messages
         if (err.name === 'ValidationError') {
             const messages = Object.values(err.errors).map(val => val.message);
