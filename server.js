@@ -14,6 +14,7 @@ const productRoutes = require('./routes/productRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 
+// Enable use of env variables
 dotenv.config();
 
 // Connect to MongoDB
@@ -21,7 +22,7 @@ connectDB();
 
 const app = express();
 
-// set 'trust proxy' setting in Express to true for express-rate-limit
+// Set 'trust proxy' setting in Express to true for express-rate-limit
 app.set('trust proxy', 1);
 
 app.use(cookieParser());
@@ -66,5 +67,11 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
+// Add comments to front end code
+// Add email functionality for production environment
 // Error handling and validations in admin dashboard
 // use format.js utils function in front end to add commas to numbers
+// update classNames in navBar component
+// Add conditionals for api urls when in development environment
+// Update button spacing in checkout and process payment
+// Add more features to readme: user reviews, discounts, etc

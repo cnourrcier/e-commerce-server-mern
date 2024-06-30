@@ -2,6 +2,7 @@ const User = require('../models/userModel');
 const { validatePassword } = require('../utils/passwordValidator');
 const bcrypt = require('bcryptjs');
 
+// Get user profile by ID, excluding the password
 exports.getUserProfile = async (req, res) => {
     try {
         const user = await User.findById(req.user._id).select('-password');
@@ -21,18 +22,20 @@ exports.getUserProfile = async (req, res) => {
     }
 };
 
+// Update user account information
 exports.updateAccount = async (req, res) => {
     const { firstName, lastName, email, address, password, confirmPassword } = req.body;
 
     try {
         const user = await User.findById(req.user._id);
 
+        // Update user details
         user.firstName = firstName || user.firstName;
         user.lastName = lastName || user.lastName;
         user.email = email || user.email;
         user.address = address || user.address;
 
-        // Custom controller-level password validations
+        // Validate and update password if provided
         if (password || confirmPassword) {
             const validationError = await validatePassword(password, confirmPassword, user.password, user.previousPasswords);
             if (validationError) {
@@ -41,7 +44,7 @@ exports.updateAccount = async (req, res) => {
                     message: validationError
                 });
             }
-            // Save current password to previousPasswords array
+            // Store the current password in the previousPasswords array
             user.previousPasswords.push(user.password);
             if (user.previousPasswords.length > 5) { // Keep only the last 5 passwords
                 user.previousPasswords.shift();
@@ -64,7 +67,7 @@ exports.updateAccount = async (req, res) => {
             }
         });
     } catch (err) {
-        // Extract mongoose validation error messages
+        // Handle Mongoose validation errors
         if (err.name === 'ValidationError') {
             const messages = Object.values(err.errors).map(val => val.message);
             return res.status(400).json({
@@ -80,6 +83,7 @@ exports.updateAccount = async (req, res) => {
     }
 };
 
+// Delete user account
 exports.deleteAccount = async (req, res) => {
     try {
         await User.findByIdAndDelete(req.user._id);

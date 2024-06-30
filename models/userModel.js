@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 
+// Schema definition for User model
 const userSchema = new mongoose.Schema({
     firstName: {
         type: String,
@@ -55,6 +56,7 @@ const userSchema = new mongoose.Schema({
     }
 });
 
+// Pre-save middleware to hash passwords
 userSchema.pre('save', async function (next) {
     if (!this.isModified('password')) {
         return next();
@@ -64,6 +66,7 @@ userSchema.pre('save', async function (next) {
     next();
 });
 
+// Method to generate a password reset token
 userSchema.methods.getResetPasswordToken = function () {
     const resetToken = crypto.randomBytes(20).toString('hex');
     this.resetPasswordToken = crypto.createHash('sha256').update(resetToken).digest('hex');
@@ -71,12 +74,14 @@ userSchema.methods.getResetPasswordToken = function () {
     return resetToken;
 };
 
+// Method to generate an email verification token
 userSchema.methods.getVerificationToken = function () {
     const verificationToken = crypto.randomBytes(20).toString('hex');
     this.verificationToken = crypto.createHash('sha256').update(verificationToken).digest('hex');
     return verificationToken;
 }
 
+// Create User model from schema
 const User = mongoose.model('User', userSchema);
 
 module.exports = User;

@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 
+// Schema for product reviews
 const ReviewSchema = new mongoose.Schema({
   rating: Number,
   comment: String,
@@ -8,12 +9,14 @@ const ReviewSchema = new mongoose.Schema({
   reviewerEmail: String
 });
 
+// Schema for product dimensions
 const DimensionsSchema = new mongoose.Schema({
   width: Number,
   height: Number,
   depth: Number
 });
 
+// Schema for product metadata
 const MetaSchema = new mongoose.Schema({
   createdAt: Date,
   updatedAt: Date,
@@ -21,6 +24,7 @@ const MetaSchema = new mongoose.Schema({
   qrCode: String
 });
 
+// Main schema for products
 const ProductSchema = new mongoose.Schema({
   id: Number,
   title: String,
@@ -46,6 +50,7 @@ const ProductSchema = new mongoose.Schema({
   thumbnail: String
 });
 
+// Create the product model using the schema
 const Product = mongoose.model('Product', ProductSchema);
 
 module.exports = Product;

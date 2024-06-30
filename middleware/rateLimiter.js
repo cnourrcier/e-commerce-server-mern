@@ -1,5 +1,6 @@
 const rateLimit = require('express-rate-limit');
 
+// Limit request rate for IPs
 const rateLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 50, // Limit each IP to 5 requests per window (15 minutes)

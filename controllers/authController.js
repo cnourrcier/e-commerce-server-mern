@@ -6,6 +6,7 @@ const sendEmail = require('../utils/sendEmail');
 const Cart = require('../models/cartModel');
 const { validatePassword } = require('../utils/passwordValidator');
 
+// Generate a JWT token for user authentication
 const generateToken = (id) => {
     return jwt.sign(
         { id },
@@ -14,9 +15,11 @@ const generateToken = (id) => {
     );
 };
 
+// User signup function
 exports.signup = async (req, res) => {
     const { firstName, lastName, email, password, confirmPassword } = req.body;
 
+    // Check if passwords match
     if (password !== confirmPassword) {
         return res.status(400).json({
             success: false,
@@ -25,6 +28,7 @@ exports.signup = async (req, res) => {
     }
 
     try {
+        // Check if user already exists
         const userExists = await User.findOne({ email });
         if (userExists) {
             return res.status(400).json({
@@ -33,12 +37,14 @@ exports.signup = async (req, res) => {
             });
         }
 
+        // Create a new user
         const user = new User({ firstName, lastName, email, password });
 
         // Generate verification token
         const verificationToken = user.getVerificationToken();
         await user.save();
 
+        // Create a cart for the new user
         const cart = new Cart({ user: user._id });
         await cart.save();
 
@@ -46,18 +52,19 @@ exports.signup = async (req, res) => {
         const verificationUrl = `${req.protocol}://${req.get('host')}/api/verify-email/${verificationToken}`;
         const message = `Please verify your email by clicking the link: \n\n ${verificationUrl}`;
 
-        // Logging the verification URL and message for debugging
         await sendEmail({
             email: user.email,
             subject: 'Email Verification',
             message
         });
 
+        // Generate JWT token
         const token = generateToken(user._id);
 
+        // Set authentication cookie
         res.cookie('authToken', token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production', // Set to true in production
+            secure: process.env.NODE_ENV === 'production',
             sameSite: 'strict',
             maxAge: 24 * 60 * 60 * 1000 // 1 day
         });
@@ -71,7 +78,7 @@ exports.signup = async (req, res) => {
             email: user.email
         });
     } catch (err) {
-        // Extract mongoose validation error messages
+        // Handle mongoose validation errors
         if (err.name === 'ValidationError') {
             const messages = Object.values(err.errors).map(val => val.message);
             return res.status(400).json({
@@ -80,6 +87,7 @@ exports.signup = async (req, res) => {
             });
         }
 
+        // Handle server errors
         res.status(500).json({
             success: false,
             message: 'Server error'
@@ -87,6 +95,7 @@ exports.signup = async (req, res) => {
     }
 };
 
+// Verify user email
 exports.verifyEmail = async (req, res) => {
     const verificationToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
 
@@ -100,6 +109,7 @@ exports.verifyEmail = async (req, res) => {
             return res.status(400).json({ message: 'User is already verified' });
         }
 
+        // Mark user as verified
         user.isVerified = true;
         user.verificationToken = undefined;
         await user.save();
@@ -113,6 +123,7 @@ exports.verifyEmail = async (req, res) => {
     }
 };
 
+// Resend verification email
 exports.resendVerificationEmail = async (req, res) => {
     const { email } = req.body;
     try {
@@ -152,6 +163,7 @@ exports.resendVerificationEmail = async (req, res) => {
     }
 }
 
+// Check authentication status
 exports.authStatus = async (req, res) => {
     let token;
 
@@ -167,6 +179,7 @@ exports.authStatus = async (req, res) => {
     }
 
     try {
+        // Verify JWT token
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const user = await User.findById(decoded.id).select('-password');
 
@@ -189,17 +202,19 @@ exports.authStatus = async (req, res) => {
     }
 };
 
+// User login function
 exports.login = async (req, res) => {
     const { email, password } = req.body;
     try {
         const user = await User.findOne({ email });
 
+        // Check if user is verified and password matches
         if (user?.isVerified && await bcrypt.compare(password, user.password)) {
             const token = generateToken(user._id);
 
             res.cookie('authToken', token, {
                 httpOnly: true,
-                secure: process.env.NODE_ENV === 'production', // Set to true in production
+                secure: process.env.NODE_ENV === 'production',
                 sameSite: 'strict',
                 maxAge: 24 * 60 * 60 * 1000 // 1 day
             });
@@ -214,11 +229,13 @@ exports.login = async (req, res) => {
                 role: user.role
             });
 
+            // Handle unverified user login attempt
         } else if (user && !user.isVerified) {
             res.status(401).json({
                 success: false,
                 message: 'Login failed. Please verify your account first.'
             })
+            // Handle invalid login credentials
         } else {
             res.status(401).json({
                 success: false,
@@ -233,10 +250,11 @@ exports.login = async (req, res) => {
     }
 };
 
+// User logout function
 exports.logout = (req, res) => {
     res.cookie('authToken', '', {
         httpOnly: true,
-        expires: new Date(0), // Set the cookie to expire immediately
+        expires: new Date(0), // Expire cookie immediately
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict'
     });
@@ -247,6 +265,7 @@ exports.logout = (req, res) => {
     });
 }
 
+// Request password reset
 exports.requestPasswordReset = async (req, res) => {
     const { email } = req.body;
     try {
@@ -256,6 +275,7 @@ exports.requestPasswordReset = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
+        // Construct password reset email
         const resetToken = user.getResetPasswordToken();
         await user.save();
 
@@ -280,10 +300,12 @@ exports.requestPasswordReset = async (req, res) => {
     }
 };
 
+// Reset password function
 exports.resetPassword = async (req, res) => {
     const resetPasswordToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
 
     try {
+        // Find user with valid reset token and expiration
         const user = await User.findOne({
             resetPasswordToken,
             resetPasswordExpire: { $gt: Date.now() }
@@ -297,7 +319,7 @@ exports.resetPassword = async (req, res) => {
 
         const { password, confirmPassword } = req.body;
 
-        // Custom controller-level password validations
+        // Custom password validations
         const validationError = await validatePassword(password, confirmPassword, user.password, user.previousPasswords);
         if (validationError) {
             return res.status(400).json({
@@ -306,12 +328,13 @@ exports.resetPassword = async (req, res) => {
             });
         }
 
-        // Save current password to previousPasswords array
+        // Store current password to previousPasswords array
         user.previousPasswords.push(user.password);
         if (user.previousPasswords.length > 5) { // Keep only the last 5 passwords
             user.previousPasswords.shift();
         }
 
+        // Update user password
         user.password = password;
         user.resetPasswordToken = undefined;
         user.resetPasswordExpire = undefined;
@@ -322,7 +345,7 @@ exports.resetPassword = async (req, res) => {
             message: 'Password reset successful'
         });
     } catch (err) {
-        // Extract mongoose validation error messages
+        // Handle mongoose validation errors
         if (err.name === 'ValidationError') {
             const messages = Object.values(err.errors).map(val => val.message);
             return res.status(400).json({
@@ -330,7 +353,7 @@ exports.resetPassword = async (req, res) => {
                 message: messages.join(', ')
             });
         }
-
+        // Handle server errors
         res.status(500).json({
             success: false,
             message: 'Server error'

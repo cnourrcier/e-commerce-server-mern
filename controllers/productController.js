@@ -1,5 +1,6 @@
 const Product = require('../models/productModel');
 
+// Retrieve all unique product categories
 exports.getAllCategories = async (req, res) => {
     try {
         const categories = await Product.distinct('category');
@@ -12,6 +13,7 @@ exports.getAllCategories = async (req, res) => {
     }
 };
 
+// Retrieve products by category
 exports.getProductsByCategory = async (req, res) => {
     const { category } = req.params;
     try {
@@ -25,6 +27,7 @@ exports.getProductsByCategory = async (req, res) => {
     }
 };
 
+// Retrieve a single product by its ID
 exports.getProductById = async (req, res) => {
     const { id } = req.params;
     try {
@@ -45,6 +48,7 @@ exports.getProductById = async (req, res) => {
     }
 };
 
+// Search for products based on a query term
 exports.searchProducts = async (req, res) => {
     console.log('hi')
     try {
