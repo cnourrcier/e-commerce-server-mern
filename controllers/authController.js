@@ -114,7 +114,12 @@ exports.verifyEmail = async (req, res) => {
         user.verificationToken = undefined;
         await user.save();
 
-        res.redirect(`/login`);
+        if (process.env.NODE_ENV === 'development') {
+            res.redirect(`${process.env.FRONTEND_URL_DEV}/login`)
+        } else {
+            res.redirect(`/login`);
+        }
+
     } catch (err) {
         res.status(500).json({
             success: false,
@@ -279,7 +284,10 @@ exports.requestPasswordReset = async (req, res) => {
         const resetToken = user.getResetPasswordToken();
         await user.save();
 
-        const resetUrl = `${req.protocol}://${req.get('host')}/reset-password/${resetToken}`;
+        const resetUrl = process.env.NODE_ENV === 'development'
+            ? `${process.env.FRONTEND_URL_DEV}/reset-password/${resetToken}`
+            : `${req.protocol}://${req.get('host')}/reset-password/${resetToken}`
+
         const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please use the below link to reset your password: \n\n ${resetUrl} \n\n This reset password link will only be valid for 10 minutes.`;
 
         await sendEmail({
