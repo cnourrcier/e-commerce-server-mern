@@ -65,13 +65,13 @@ app.use((err, req, res, next) => {
 
 // Start the server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Server running on port ${PORT} in ${process.env.NODE_ENV} mode`));
 
-// Add comments to front end code
-// Add email functionality for production environment
-// Error handling and validations in admin dashboard
-// use format.js utils function in front end to add commas to numbers
+// Fix bug: when signing up, I clicked resend verification email, and I didn't enter my email. Instead I went to signup and it brought me to the user profile page. Then I was able to go to shop and add items to the cart. I checked the db and I am still unverified. Upon logging out and trying to log back in, I recieved the error response that I need to verify my account first. 
 // update classNames in navBar component
-// Add conditionals for api urls when in development environment
-// Update button spacing in checkout and process payment
-// Add more features to readme: user reviews, discounts, etc
+// Fix background to match navBar color
+// Add comments to front end code
+// Test email functionality in production environment
+// Error handling and validations in admin dashboard
+
+

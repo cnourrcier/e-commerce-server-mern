@@ -49,7 +49,10 @@ exports.signup = async (req, res) => {
         await cart.save();
 
         // Send verification email
-        const verificationUrl = `${req.protocol}://${req.get('host')}/api/verify-email/${verificationToken}`;
+        const verificationUrl = process.env.NODE_ENV === 'development'
+            ? `${req.protocol}://${req.get('host')}/api/verify-email/${verificationToken}`
+            : `${req.protocol}://${process.env.PROD_URL}/api/verify-email/${verificationToken}`;
+
         const message = `Please verify your email by clicking the link: \n\n ${verificationUrl}`;
 
         await sendEmail({
@@ -147,7 +150,10 @@ exports.resendVerificationEmail = async (req, res) => {
         await user.save();
 
         // Send verification email
-        const verificationUrl = `${req.protocol}://${req.get('host')}/api/verify-email/${verificationToken}`;
+        const verificationUrl = process.env.NODE_ENV === 'development'
+            ? `${req.protocol}://${req.get('host')}/api/verify-email/${verificationToken}`
+            : `${req.protocol}://${process.env.PROD_URL}/api/verify-email/${verificationToken}`;
+
         const message = `Please verify your email by clicking the link: \n\n ${verificationUrl}`;
 
         await sendEmail({
@@ -286,7 +292,7 @@ exports.requestPasswordReset = async (req, res) => {
 
         const resetUrl = process.env.NODE_ENV === 'development'
             ? `${process.env.FRONTEND_URL_DEV}/reset-password/${resetToken}`
-            : `${req.protocol}://${req.get('host')}/reset-password/${resetToken}`
+            : `${req.protocol}://${process.env.PROD_URL}/reset-password/${resetToken}`
 
         const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please use the below link to reset your password: \n\n ${resetUrl} \n\n This reset password link will only be valid for 10 minutes.`;
 
