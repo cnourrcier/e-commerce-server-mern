@@ -117,13 +117,11 @@ exports.verifyEmail = async (req, res) => {
         user.verificationToken = undefined;
         await user.save();
 
-        // if (process.env.NODE_ENV === 'development') {
-        //     res.redirect(`${process.env.FRONTEND_URL_DEV}/login`);
-        // } else {
-        //     res.redirect(`/login`);
-        // }
+        const redirectUrl = process.env.NODE_ENV === 'development'
+            ? `${req.protocol}://${process.env.FRONTEND_URL_DEV}/login`
+            : `${req.protocol}://${process.env.PROD_URL}/login`;
 
-        res.redirect(`/login`);
+        res.redirect(redirectUrl);
 
     } catch (err) {
         res.status(500).json({
