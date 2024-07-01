@@ -42,7 +42,10 @@ exports.signup = async (req, res) => {
 
         // Generate verification token
         const verificationToken = user.getVerificationToken();
+        console.log('Generated verification token:', verificationToken);
+
         await user.save();
+        console.log('Saved user:', user);
 
         // Create a cart for the new user
         const cart = new Cart({ user: user._id });
@@ -123,6 +126,7 @@ exports.verifyEmail = async (req, res) => {
         // Mark user as verified
         user.isVerified = true;
         user.verificationToken = undefined;
+        console.log('verificationToken set to undefined')
         await user.save();
 
         const redirectUrl = process.env.NODE_ENV === 'development'
