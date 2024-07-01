@@ -124,10 +124,10 @@ exports.verifyEmail = async (req, res) => {
         // Log the URL to verify correctness
         console.log(`Redirecting to: ${redirectUrl}`);
 
-        // Explicitly set status code to 302 for redirection
-        res.status(302).redirect(redirectUrl);
+        return res.redirect(redirectUrl);
 
     } catch (err) {
+        console.error('Server error during email verification:', err)
         res.status(500).json({
             success: false,
             message: 'Server error'
@@ -246,19 +246,19 @@ exports.login = async (req, res) => {
 
             // Handle unverified user login attempt
         } else if (user && !user.isVerified) {
-            res.status(401).json({
+            return res.status(401).json({
                 success: false,
                 message: 'Login failed. Please verify your account first.'
             })
             // Handle invalid login credentials
         } else {
-            res.status(401).json({
+            return res.status(401).json({
                 success: false,
                 message: 'Login failed. Invalid email or password'
             });
         }
     } catch (err) {
-        res.status(400).json({
+        return res.status(400).json({
             success: false,
             message: 'Invalid login credentials'
         });
