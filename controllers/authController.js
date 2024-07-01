@@ -272,6 +272,14 @@ exports.logout = (req, res) => {
 
 // Request password reset
 exports.requestPasswordReset = async (req, res) => {
+
+    if (req.user) {
+        return res.status(400).json({
+            success: false,
+            message: 'User is already logged in'
+        });
+    }
+
     const { email } = req.body;
     try {
         const user = await User.findOne({ email });

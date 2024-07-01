@@ -66,12 +66,6 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT} in ${process.env.NODE_ENV} mode`));
 
-// Fix bug: Test solution - remove functionality to send cookie with authToken during signup.
-//     - when signing up, I clicked resend verification email, and I didn't enter my email. Instead I went to signup/login and it brought me to the user profile page. Then I was able to go to shop and add items to the cart. I checked the db and I am still unverified. Upon logging out and trying to log back in, I recieved the error response that I need to verify my account first. 
-//     - after signing up, clicking login tab, and then clicking resend verification email, and then clicking login/signup tab again.
-//     - after signing up, without going to my email and verifying my account, I instead clicked the login tab, and then on that page I clicked Don't have an account? Sign up 'here', and it redirected me to my profile page when I am still unverified.
-//     - after signing up, simply refreshing the page will redirect me to the user profile page.
-// If user is logged in, don't allow them to resend verification email (if they are already logged in they should already be verified). Redirect them to their profile page.
 // update classNames in navBar component
 // Fix background to match navBar color
 // Add comments to front end code
