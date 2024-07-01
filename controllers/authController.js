@@ -42,10 +42,8 @@ exports.signup = async (req, res) => {
 
         // Generate verification token
         const verificationToken = user.getVerificationToken();
-        console.log('Generated verification token:', verificationToken);
 
         await user.save();
-        console.log('Saved user:', user);
 
         // Create a cart for the new user
         const cart = new Cart({ user: user._id });
@@ -62,17 +60,6 @@ exports.signup = async (req, res) => {
             email: user.email,
             subject: 'Email Verification',
             message
-        });
-
-        // Generate JWT token
-        const token = generateToken(user._id);
-
-        // Set authentication cookie
-        res.cookie('authToken', token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
-            maxAge: 24 * 60 * 60 * 1000 // 1 day
         });
 
         res.status(201).json({
@@ -107,31 +94,21 @@ function hashToken(token) {
 
 // Verify user email
 exports.verifyEmail = async (req, res) => {
-    // Log the raw token received from the URL
-    console.log('Received token:', req.params.token);
-
     const verificationToken = hashToken(req.params.token);
-
-    // Log the hashed token
-    console.log('Hashed token:', verificationToken);
 
     try {
         const user = await User.findOne({ verificationToken });
         if (!user) {
-            console.log('Invalid token - user not found')
             return res.status(400).json({ message: 'Invalid token' });
         }
 
         if (user.isVerified) {
-            console.log('User is already verified')
             return res.status(400).json({ message: 'User is already verified' });
         }
-        console.log('user found from hashed verificationToken:', user);
 
         // Mark user as verified
         user.isVerified = true;
         user.verificationToken = undefined;
-        console.log('verificationToken set to undefined')
         await user.save();
 
         // Send success response
@@ -141,7 +118,6 @@ exports.verifyEmail = async (req, res) => {
         });
 
     } catch (err) {
-        console.error('Server error during email verification:', err)
         res.status(500).json({
             success: false,
             message: 'Server error'
