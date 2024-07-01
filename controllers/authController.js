@@ -121,7 +121,11 @@ exports.verifyEmail = async (req, res) => {
             ? `${req.protocol}://${process.env.FRONTEND_URL_DEV}/login`
             : `${req.protocol}://${process.env.PROD_URL}/login`;
 
-        res.redirect(redirectUrl);
+        // Log the URL to verify correctness
+        console.log(`Redirecting to: ${redirectUrl}`);
+
+        // Explicitly set status code to 302 for redirection
+        res.status(302).redirect(redirectUrl);
 
     } catch (err) {
         res.status(500).json({
