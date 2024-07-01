@@ -53,8 +53,8 @@ exports.signup = async (req, res) => {
 
         // Send verification email
         const verificationUrl = process.env.NODE_ENV === 'development'
-            ? `${req.protocol}://${req.get('host')}/api/verify-email/${verificationToken}`
-            : `${req.protocol}://${process.env.PROD_URL}/api/verify-email/${verificationToken}`;
+            ? `${req.protocol}://${process.env.FRONTEND_URL_DEV}/verify-email/${verificationToken}`
+            : `${req.protocol}://${process.env.PROD_URL}/verify-email/${verificationToken}`;
 
         const message = `Please verify your email by clicking the link: \n\n ${verificationUrl}`;
 
@@ -126,6 +126,7 @@ exports.verifyEmail = async (req, res) => {
             console.log('User is already verified')
             return res.status(400).json({ message: 'User is already verified' });
         }
+        console.log('user found from hashed verificationToken:', user);
 
         // Mark user as verified
         user.isVerified = true;
@@ -133,15 +134,11 @@ exports.verifyEmail = async (req, res) => {
         console.log('verificationToken set to undefined')
         await user.save();
 
-        const redirectUrl = process.env.NODE_ENV === 'development'
-            ? `${req.protocol}://${process.env.FRONTEND_URL_DEV}/login`
-            : `${req.protocol}://${process.env.PROD_URL}/login`;
-
-        // Log the URL to verify correctness
-        console.log(`Redirecting to: ${redirectUrl}`);
-
-        // Send a 302 status code with the Location header to redirect the user
-        return res.status(302).redirect(redirectUrl);
+        // Send success response
+        return res.status(200).json({
+            success: true,
+            message: 'Email successfully verified'
+        });
 
     } catch (err) {
         console.error('Server error during email verification:', err)
@@ -172,8 +169,8 @@ exports.resendVerificationEmail = async (req, res) => {
 
         // Send verification email
         const verificationUrl = process.env.NODE_ENV === 'development'
-            ? `${req.protocol}://${req.get('host')}/api/verify-email/${verificationToken}`
-            : `${req.protocol}://${process.env.PROD_URL}/api/verify-email/${verificationToken}`;
+            ? `${req.protocol}://${process.env.FRONTEND_URL_DEV}/verify-email/${verificationToken}`
+            : `${req.protocol}://${process.env.PROD_URL}/verify-email/${verificationToken}`;
 
         const message = `Please verify your email by clicking the link: \n\n ${verificationUrl}`;
 
@@ -312,7 +309,7 @@ exports.requestPasswordReset = async (req, res) => {
         await user.save();
 
         const resetUrl = process.env.NODE_ENV === 'development'
-            ? `${process.env.FRONTEND_URL_DEV}/reset-password/${resetToken}`
+            ? `${req.protocol}://${process.env.FRONTEND_URL_DEV}/reset-password/${resetToken}`
             : `${req.protocol}://${process.env.PROD_URL}/reset-password/${resetToken}`
 
         const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please use the below link to reset your password: \n\n ${resetUrl} \n\n This reset password link will only be valid for 10 minutes.`;
