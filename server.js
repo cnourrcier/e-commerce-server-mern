@@ -68,9 +68,11 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT} in ${process.env.NODE_ENV} mode`));
 
 // Fix bug: when signing up, I clicked resend verification email, and I didn't enter my email. Instead I went to signup and it brought me to the user profile page. Then I was able to go to shop and add items to the cart. I checked the db and I am still unverified. Upon logging out and trying to log back in, I recieved the error response that I need to verify my account first. 
+// If user is logged in, don't allow them to resend verification email (if they are already logged in they should already be verified). Redirect them to their profile page.
 // update classNames in navBar component
 // Fix background to match navBar color
 // Add comments to front end code
+// Update name to Cardinal Finds
 // Test email functionality in production environment
 // Error handling and validations in admin dashboard
 
