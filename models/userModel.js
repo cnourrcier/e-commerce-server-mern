@@ -78,7 +78,7 @@ userSchema.methods.getResetPasswordToken = function () {
 userSchema.methods.getVerificationToken = function () {
     const verificationToken = crypto.randomBytes(20).toString('hex');
     this.verificationToken = crypto.createHash('sha256').update(verificationToken).digest('hex');
-    return this.verificationToken;
+    return verificationToken;
 }
 
 // Create User model from schema

@@ -101,12 +101,16 @@ exports.signup = async (req, res) => {
     }
 };
 
+function hashToken(token) {
+    return crypto.createHash('sha256').update(token).digest('hex');
+}
+
 // Verify user email
 exports.verifyEmail = async (req, res) => {
     // Log the raw token received from the URL
     console.log('Received token:', req.params.token);
 
-    const verificationToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
+    const verificationToken = hashToken(req.params.token);
 
     // Log the hashed token
     console.log('Hashed token:', verificationToken);
