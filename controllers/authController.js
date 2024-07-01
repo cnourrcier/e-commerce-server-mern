@@ -100,15 +100,23 @@ exports.signup = async (req, res) => {
 
 // Verify user email
 exports.verifyEmail = async (req, res) => {
+    // Log the raw token received from the URL
+    console.log('Received token:', req.params.token);
+
     const verificationToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
+
+    // Log the hashed token
+    console.log('Hashed token:', verificationToken);
 
     try {
         const user = await User.findOne({ verificationToken });
         if (!user) {
+            console.log('Invalid token - user not found')
             return res.status(400).json({ message: 'Invalid token' });
         }
 
         if (user.isVerified) {
+            console.log('User is already verified')
             return res.status(400).json({ message: 'User is already verified' });
         }
 
@@ -124,7 +132,8 @@ exports.verifyEmail = async (req, res) => {
         // Log the URL to verify correctness
         console.log(`Redirecting to: ${redirectUrl}`);
 
-        return res.redirect(redirectUrl);
+        // Send a 302 status code with the Location header to redirect the user
+        return res.status(302).redirect(redirectUrl);
 
     } catch (err) {
         console.error('Server error during email verification:', err)
