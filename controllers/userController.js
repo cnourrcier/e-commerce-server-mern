@@ -7,7 +7,11 @@ exports.getUserProfile = async (req, res) => {
     try {
         const user = await User.findById(req.user._id).select('-password');
         if (user) {
-            res.json(user);
+            res.json({
+                success: true,
+                message: 'Successfully retreived user',
+                user
+            });
         } else {
             res.status(404).json({
                 success: false,
