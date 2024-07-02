@@ -74,9 +74,11 @@ exports.searchProducts = async (req, res) => {
         });
 
         if (!products) {
-            console.log('Error fetching products');
+            res.status(200).json({
+                success: false,
+                message: 'No products found'
+            })
         }
-
         res.status(200).json({
             success: true,
             message: 'Successfully retreived products',
