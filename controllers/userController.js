@@ -2,30 +2,6 @@ const User = require('../models/userModel');
 const { validatePassword } = require('../utils/passwordValidator');
 const bcrypt = require('bcryptjs');
 
-// Get user profile by ID, excluding the password
-exports.getUserProfile = async (req, res) => {
-    try {
-        const user = await User.findById(req.user._id).select('-password');
-        if (user) {
-            res.json({
-                success: true,
-                message: 'Successfully retreived user',
-                user
-            });
-        } else {
-            res.status(404).json({
-                success: false,
-                message: 'User not found'
-            });
-        }
-    } catch (err) {
-        res.status(500).json({
-            success: false,
-            message: 'Server error'
-        });
-    }
-};
-
 // Update user account information
 exports.updateAccount = async (req, res) => {
     const { firstName, lastName, email, address, password, confirmPassword } = req.body;
