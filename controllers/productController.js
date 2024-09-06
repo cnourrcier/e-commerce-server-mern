@@ -39,7 +39,7 @@ exports.getProductsByCategory = async (req, res) => {
 exports.getProductById = async (req, res) => {
     const { id } = req.params;
     try {
-        const product = await Product.findById(id);
+        const product = await Product.find({id});
         if (product) {
             res.status(200).json({
                 success: true,

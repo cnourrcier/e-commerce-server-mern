@@ -5,6 +5,6 @@ const { getAllCategories, getProductsByCategory, getProductById, searchProducts 
 router.get('/categories', getAllCategories);
 router.get('/category/:category', getProductsByCategory);
 router.get('/search', searchProducts);
-router.get('/:id', getProductById);
+router.get('/product/:id', getProductById);
 
 module.exports = router;
