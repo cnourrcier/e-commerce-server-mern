@@ -36,7 +36,7 @@ exports.getProductsByCategory = async (req, res) => {
 };
 
 // Retrieve a single product by its ID
-exports.getProductById = async (req, res) => {
+exports.getProduct = async (req, res) => {
     const { id } = req.params;
     try {
         const product = await Product.find({id});
